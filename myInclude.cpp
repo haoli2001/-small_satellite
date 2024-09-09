@@ -102,59 +102,21 @@ void combine(unsigned char* Inputcode1, int Inputlen1, unsigned char* Inputcode2
     compar7= *synvc;
     if(*synflag!=3)
     {synflag1=*synflag;}
-//    if (NULL == Brightdata && NULL == Densedata)
-//    {
-//        printf("check: failed to apply for databuff space in combine!!\n");
-//        //return 0;
-//        getchar();
-//        exit(0);
-//    }
-
-//    //判断两路数据长度，取短为minlen
-//    int minlen;
-//    if(Inputlen1<Inputlen2)
-//    {
-//        minlen = Inputlen1;
-//    }
-//    else{
-//        minlen = Inputlen2;
-//    }
-
-//    //检索帧头
-//    for(int i = 0;i<minlen;i++)
-//    {
-//        synflag1 = (Inputcode1[i] << 24 |Inputcode1[i + 1] << 16 | Inputcode1[i + 2] << 8 |Inputcode1[i + 3]) & 0xFFFFFFFF;
-//        if(synflag1 == 0x1ACFFC1D)
-//        {
-//            compar1 = (Inputcode1[i + 6] << 16 | Inputcode1[i + 7] << 8 | Inputcode1[i + 8]) & 0xFFFFFF;
-//            compar3 = Inputcode1[i + 9]&0xFF;
-//            compar5 = (Inputcode1[i + 4] << 8 | Inputcode1[i + 5]) & 0xFFFF;
-//            for(int j = 0;j<minlen;j++)
-//            {
-//                synflag2 = (Inputcode2[j] << 24 |Inputcode2[j + 1] << 16 | Inputcode2[j + 2] << 8 |Inputcode2[j + 3]) & 0xFFFFFFFF;
-//                if(synflag2 == 0x1ACFFC1D)
-//                {
-//                    compar2 = (Inputcode2[j + 6] << 16 | Inputcode2[j + 7] << 8 | Inputcode2[j + 8]) & 0xFFFFFF;
-//                    compar4 = Inputcode2[j + 9]&0xFF;
-//                    compar6 = (Inputcode2[j + 4] << 8 | Inputcode2[j + 5]) & 0xFFFF;
-//                }
-//            }
-//        }
-
-//    }
 
 
-
+    //通道 数据的个数
     count1 = Inputlen1 / iactual;
     count2 = Inputlen2 / iactual;
 
     while (count1 > 0 && count2 > 0)
     {
-
+        //通过从输入数据流的当前帧中读取第5,6字节，并将它们合成为一个16位的无符号整数。
+        //为版本号
         compar5 = (Inputcode1[data1_c * iactual + 4] << 8 | Inputcode1[data1_c * iactual + 5]) & 0xFFFF;
         compar6 = (Inputcode2[data2_c * iactual + 4] << 8 | Inputcode2[data2_c * iactual + 5]) & 0xFFFF;
 
         //剔除掉错误帧 后续错误排查
+        //版本号比较
         while(compar5!=22659 && compar5!=22662 && compar5!=22668 && compar5!=22673 && compar5!=22690 && compar5!=22719 && count1>0)
         {
 //            if(compar5 == 0)
@@ -640,7 +602,17 @@ void combine_one(unsigned char* Inputcode1, int Inputlen1,
 
     //return; //返回合并数据的长度
 }
-
+/*
+ * Inputcode1, Inputcode2: 输入数据流1和数据流2的指针。
+Inputlen1, Inputlen2: 输入数据流1和数据流2的长度。
+SSdata, HFdata, TCZdata: 存储分类后的数据。
+SSlen, HFlen, TCZlen: 存储分类后数据的长度。
+remaincode1, remaincode2: 存储剩余未处理的数据。
+remainlen1, remainlen2: 剩余数据的长度。
+irecord, iactual: 记录帧长和实际帧长。
+outputpath: 合并后数据的输出路径。
+synvc, synflag: 用于同步的虚拟信道和标志。
+ * */
 void newcombine(unsigned char *Inputcode1, int Inputlen1, unsigned char *Inputcode2, int Inputlen2,
                 unsigned char *SSdata, unsigned char *HFdata, unsigned char *TCZdata,
                 long long *SSlen, long long *HFlen, long long *TCZlen,
@@ -658,7 +630,7 @@ void newcombine(unsigned char *Inputcode1, int Inputlen1, unsigned char *Inputco
     int				count1, count2;
     int				data1_c = 0, data2_c = 0, data3_c = 0;
 //    unsigned int	flag1, flag2;
-    unsigned int	flag1, synflag1;
+    unsigned int	flag1, synflag1;//注意初始化
     unsigned int	compar1, compar2, compar3, compar4;
     int             num0 = 0,num1 = 0, num63 = 0;//对应类型数据AOS个数
     unsigned int compar5,compar6,compar7;//应对Vc不同，但compar3=compar4的情况
@@ -677,6 +649,7 @@ void newcombine(unsigned char *Inputcode1, int Inputlen1, unsigned char *Inputco
         return;
     }
 
+    //计算输入数据流的帧数
     count1 = Inputlen1 / iactual;
     count2 = Inputlen2 / iactual;
 
@@ -684,9 +657,10 @@ void newcombine(unsigned char *Inputcode1, int Inputlen1, unsigned char *Inputco
     {
         synflag1 = *synflag;
     }
-    while (count1 > 0 && count2 > 0)
+    while (count1 > 0 && count2 > 0) // 比较和同步操作
     {
-
+        //从当前帧的第5个字节开始读取。
+        //通过从输入数据流的当前帧中读取两个字节，并将它们合成为一个16位的无符号整数。这里为版本号+航天器标识符+虚拟信道标识符
         compar5 = (Inputcode1[data1_c * iactual + 4] << 8 | Inputcode1[data1_c * iactual + 5]) & 0xFFFF;
         compar6 = (Inputcode2[data2_c * iactual + 4] << 8 | Inputcode2[data2_c * iactual + 5]) & 0xFFFF;
 
@@ -722,19 +696,19 @@ void newcombine(unsigned char *Inputcode1, int Inputlen1, unsigned char *Inputco
         //data1_c Inputcode1处理的AOS个数 data3_c合并的AOS帧个数
 
 
-        compar1 = (Inputcode1[data1_c * iactual + 6] << 16 | Inputcode1[data1_c * iactual + 7] << 8 | Inputcode1[data1_c * iactual + 8]) & 0xFFFFFF;
-        compar2 = (Inputcode2[data2_c * iactual + 6] << 16 | Inputcode2[data2_c * iactual + 7] << 8 | Inputcode2[data2_c * iactual + 8]) & 0xFFFFFF;
+        compar1 = (Inputcode1[data1_c * iactual + 6] << 16 | Inputcode1[data1_c * iactual + 7] << 8 | Inputcode1[data1_c * iactual + 8]) & 0xFFFFFF;//VCDU计数器
+        compar2 = (Inputcode2[data2_c * iactual + 6] << 16 | Inputcode2[data2_c * iactual + 7] << 8 | Inputcode2[data2_c * iactual + 8]) & 0xFFFFFF;//VCDU计数器
         compar3 = Inputcode1[data1_c * iactual + 9]&0x0F;  //计数周期是0-F
         compar4 = Inputcode2[data2_c * iactual + 9]&0x0F;
 //        if(compar1==187838||compar2==187838){
 //            qDebug()<<compar1;
 //        }
-        if(compar5 == compar6)
+        if(compar5 == compar6)//版本号+航天器标识符+虚拟信道标识符相同的话
         {
-            if (compar3 == compar4)
+            if (compar3 == compar4)//计数周期相同
             {
                 //交替将双通道的数据拷贝到databuff
-                if (compar1 < compar2)
+                if (compar1 < compar2)//虚拟信道帧计数比较
                 {
                     //memcpy(void *str1, const void *str2, size_t n)
                     //* str1 -- 指向用于存储复制内容的目标数组，类型强制转换为 void* 指针。
@@ -917,21 +891,21 @@ void newcombine(unsigned char *Inputcode1, int Inputlen1, unsigned char *Inputco
         if (flag1 == VC_1_02 || flag1 == VC_1_03)
         //if (flag1 == VC1)
         {
-            memcpy(SSdata + num0 * iactual, databuff + i * iactual, iactual);
+            memcpy(SSdata + num0 * iactual, databuff + i * iactual, iactual);//实时数据
             num0++;
             *SSlen = num0 * iactual;
         }
         if (flag1 == VC_2_02 || flag1 == VC_2_03)
         //if (flag1 == VC1)
         {
-            memcpy(HFdata + num1 * iactual, databuff + i * iactual, iactual);
+            memcpy(HFdata + num1 * iactual, databuff + i * iactual, iactual);//回放数据
             num1++;
             *HFlen = num1 * iactual;
         }
 
         if (flag1 == VC_63_02 || flag1 == VC_63_03 )
         {
-            memcpy(TCZdata + num63 * iactual, databuff + i * iactual, iactual);
+            memcpy(TCZdata + num63 * iactual, databuff + i * iactual, iactual);//填充帧（空帧）
             num63++;
             *TCZlen = num63 * iactual;
         }
