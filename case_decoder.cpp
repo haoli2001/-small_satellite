@@ -530,7 +530,7 @@ void CASE_Decoder::run()
                 isDealing = false;
 
 
-                if (HFlen > 0)
+                if (HFlen > 0)//回放数据处理
                 {
                     isDealing = true;
                     //HFGCsum += HFGClen;
@@ -549,7 +549,7 @@ void CASE_Decoder::run()
                         fclose(fpOut);
                         fpOut = NULL;
                     }
-                    BPDUlen = (HFlen / 1024) * 850;
+                    BPDUlen = (HFlen / 1024) * 850;//BPDU位流数据区长度，为回放数据帧的个数乘以每帧有850字节的数据区
                     iProcLen3 = BPDUlen + iShiftLenhf; //y iProcLen3为strBPDU的长度
 
                     AOSdataFlag = 4;

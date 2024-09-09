@@ -882,7 +882,7 @@ void newcombine(unsigned char *Inputcode1, int Inputlen1, unsigned char *Inputco
     *synvc = compar7;
 
 
-    //帧提取分类
+    //帧提取分类，分类为相同类别的帧拼接在一起
     for (int i = 0; i < data3_c; i++)
     {
         //iactual实际帧长，我们理解这里是AOS帧实际长度即可为1024，1040这样
